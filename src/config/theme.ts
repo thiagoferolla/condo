@@ -3,7 +3,7 @@ import { makeTheme } from "dripsy";
 export const theme = makeTheme({
   colors: {
     $primary: "#622490",
-    $background: "#E5E5E5",
+    $background: "#F0EDF5",
     $income: "#1BA803",
     $expense: "#E28856",
     $destructive: "#FF6680",
