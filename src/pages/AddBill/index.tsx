@@ -45,6 +45,7 @@ export default function AddBill() {
           backgroundColor: "$background",
           borderTopRightRadius: "$xl",
           borderTopLeftRadius: "$xl",
+          paddingX: "$lg",
         }}
       />
     </View>
