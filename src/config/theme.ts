@@ -32,6 +32,7 @@ export const theme = makeTheme({
     $md: 18,
     $sm: 12,
     $xs: 8,
+    $xxs: 4,
   },
 });
 

@@ -19,6 +19,7 @@ export default function Picker(props: PickerProps) {
           color: "$text",
           fontWeight: "500",
           fontSize: "$md",
+          marginBottom: "$xxs",
         }}
       >
         {props.label}

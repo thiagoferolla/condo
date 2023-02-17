@@ -5,6 +5,7 @@ type TextInputProps = {
   label: string;
   value: string;
   placeholder: string;
+  editable?: boolean;
   onChangeText: (text: string) => void;
 };
 
@@ -18,6 +19,7 @@ export default function TextInput(props: TextInputProps) {
           color: "$text",
           fontWeight: "500",
           fontSize: "$md",
+          marginBottom: "$xxs",
         }}
       >
         {props.label}
@@ -37,6 +39,7 @@ export default function TextInput(props: TextInputProps) {
           onChangeText={props.onChangeText}
           placeholder={props.placeholder}
           style={sx({ color: "$input", fontSize: "$md" })}
+          editable={props.editable}
         />
       </View>
     </View>
