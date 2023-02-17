@@ -31,6 +31,7 @@ export default function BillsPlanPageHeader(props: BillsPlanPageHeaderProps) {
           </TouchableNativeFeedback>
         )}
       />
+
       <View sx={{ paddingX: "$lg", marginTop: "$sm", marginBottom: "$lg" }}>
         <SearchBox
           value={props.search}

@@ -10,8 +10,6 @@ import BillsList from "../../components/BillsList";
 
 export default function BillsPlan() {
   const [search, setSearch] = useState<string>("");
-  const navigation =
-    useNavigation<NativeStackNavigationProp<MainNavigatorScreens>>();
   const sx = useSx();
   const { top } = useSafeAreaInsets();
 

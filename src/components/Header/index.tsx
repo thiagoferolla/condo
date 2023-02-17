@@ -3,6 +3,7 @@ import { useNavigation } from "@react-navigation/native";
 import Icon from "@expo/vector-icons/MaterialIcons";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { MainNavigatorScreens } from "../../navigation/types";
+import { TouchableNativeFeedback } from "react-native";
 
 type HeaderProps = {
   pageTitle: string;
@@ -25,13 +26,25 @@ export default function Header(props: HeaderProps) {
         paddingX: "$lg",
       }}
     >
-      <View sx={{ flex: 1 }}>
+      <View
+        sx={{
+          flex: 1,
+          flexDirection: "row",
+          alignItems: "center",
+          paddingY: "$md",
+        }}
+      >
         {enableGoBack && (
-          <Icon
-            name="chevron-left"
-            size={24}
-            color={sx({ color: "$white" }).color}
-          />
+          <View sx={{ marginRight: "$md" }}>
+            <TouchableNativeFeedback onPress={navigation.goBack}>
+              <Icon
+                name="chevron-left"
+                size={36}
+                color={sx({ color: "$white" }).color}
+                style={{ margin: -5 }}
+              />
+            </TouchableNativeFeedback>
+          </View>
         )}
 
         <Text
@@ -39,7 +52,6 @@ export default function Header(props: HeaderProps) {
             fontSize: "$xl",
             color: "$white",
             fontWeight: "bold",
-            paddingY: "$md",
           }}
         >
           {props.pageTitle}
