@@ -1,22 +1,17 @@
+import * as SplashScreen from "expo-splash-screen";
 import { DripsyProvider } from "dripsy";
-import { StatusBar } from "expo-status-bar";
-import { StyleSheet, Text, View } from "react-native";
 import { theme } from "./src/config/theme";
 import MainNavigator from "./src/navigation/MainNavigator";
+import DatabaseServiceProvider from "./src/providers/DatabaseProvider";
+
+SplashScreen.preventAutoHideAsync();
 
 export default function App() {
   return (
-    <DripsyProvider theme={theme}>
-      <MainNavigator />
-    </DripsyProvider>
+    <DatabaseServiceProvider>
+      <DripsyProvider theme={theme}>
+        <MainNavigator />
+      </DripsyProvider>
+    </DatabaseServiceProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-});

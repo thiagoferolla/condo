@@ -1,6 +1,8 @@
 import { View, Text, useSx } from "dripsy";
 import type { Bill } from "../../@types/Bill";
 import Icon from "@expo/vector-icons/MaterialIcons";
+import useDatabase from "../../hooks/useDatabase";
+import { TouchableNativeFeedback } from "react-native";
 
 type BillCardProps = {
   bill: Bill;
@@ -8,6 +10,7 @@ type BillCardProps = {
 
 export default function BillCard(props: BillCardProps) {
   const sx = useSx();
+  const database = useDatabase();
 
   const textColor = props.bill.type === "income" ? "$income" : "$expense";
 
@@ -35,11 +38,15 @@ export default function BillCard(props: BillCardProps) {
         {props.bill.code} - {props.bill.name}
       </Text>
 
-      <Icon
-        size={24}
-        color={sx({ color: "$placeholder" }).color}
-        name="delete-outline"
-      />
+      <TouchableNativeFeedback
+        onPress={() => database?.deleteBill(props.bill.id)}
+      >
+        <Icon
+          size={24}
+          color={sx({ color: "$placeholder" }).color}
+          name="delete-outline"
+        />
+      </TouchableNativeFeedback>
     </View>
   );
 }

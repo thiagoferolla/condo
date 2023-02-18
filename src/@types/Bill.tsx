@@ -1,6 +1,6 @@
 export type Bill = {
   id: string;
-  parent_id: string;
+  parent_id?: string;
   code: string;
   name: string;
   type: "income" | "expense";

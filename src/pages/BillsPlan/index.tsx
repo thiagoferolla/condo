@@ -1,17 +1,16 @@
-import { useSx, View, Text } from "dripsy";
-import { useState } from "react";
+import { useSx, View } from "dripsy";
+import { useEffect, useState } from "react";
 import { StatusBar, ScrollView } from "react-native";
-import { useNavigation } from "@react-navigation/native";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { MainNavigatorScreens } from "../../navigation/types";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import BillsPlanPageHeader from "./BillsPlanPageHeader";
 import BillsList from "../../components/BillsList";
+import useBills from "../../hooks/useBills";
 
 export default function BillsPlan() {
-  const [search, setSearch] = useState<string>("");
   const sx = useSx();
+  const [search, setSearch] = useState<string>("");
   const { top } = useSafeAreaInsets();
+  const { data } = useBills();
 
   return (
     <View
@@ -35,7 +34,7 @@ export default function BillsPlan() {
           paddingX: "$lg",
         })}
       >
-        <BillsList />
+        <BillsList bills={data || []} />
       </ScrollView>
     </View>
   );
