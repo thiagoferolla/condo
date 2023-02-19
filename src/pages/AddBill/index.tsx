@@ -1,19 +1,34 @@
-import { View, Text, useSx } from "dripsy";
-import { StatusBar, TouchableNativeFeedback } from "react-native";
+import { View, useSx } from "dripsy";
+import { StatusBar, TouchableNativeFeedback, Alert } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Header from "../../components/Header";
 import Icon from "@expo/vector-icons/MaterialIcons";
-import { useForm } from "react-hook-form";
 import FormField, { FormFieldProps } from "./FormField";
 import * as yup from "yup";
-import { yupResolver } from "@hookform/resolvers/yup";
+import useAvailableParentAccounts from "../../hooks/useAvailableParentAccounts";
+import useNewCode from "../../hooks/useNewCode";
+import useDatabase from "../../hooks/useDatabase";
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { MainNavigatorScreens } from "../../navigation/types";
+import { Bill } from "../../@types/Bill";
+import { useFormik } from "formik";
 
 const formSchema = yup.object().shape({
   parent_id: yup.string(),
   code: yup.string().required().min(1),
-  name: yup.string().required().min(1),
-  type: yup.string().required().oneOf(["income", "expense"]),
-  accept_entries: yup.string().required().oneOf(["1", "0"]),
+  name: yup
+    .string()
+    .required("O nome da conta é obrigatório")
+    .min(1, "O nome da conta é obrigatório"),
+  type: yup
+    .string()
+    .required("É necessário escolher o tipo da conta")
+    .oneOf(["income", "expense"]),
+  accept_entries: yup
+    .string()
+    .required("É necessário dizer se a conta aceita lançamentos")
+    .oneOf(["1", "0"]),
 });
 
 const finalSchema = yup.object().shape({
@@ -25,7 +40,20 @@ const finalSchema = yup.object().shape({
 });
 
 export default function AddBill() {
-  const availableParentAccounts: { label: string; value: string }[] = [];
+  const { top } = useSafeAreaInsets();
+  const sx = useSx();
+  const database = useDatabase();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<MainNavigatorScreens>>();
+
+  const availableParentAccounts = useAvailableParentAccounts();
+  const availableParentAccountsOptions = [
+    { label: "Nenhuma", value: "" },
+    ...availableParentAccounts.map((a) => ({
+      label: `${a.code} - ${a.name}`,
+      value: a.id,
+    })),
+  ];
   const availableTypes: { label: string; value: string }[] = [
     { label: "Receita", value: "income" },
     { label: "Despesa", value: "expense" },
@@ -35,27 +63,26 @@ export default function AddBill() {
     { label: "Não", value: "0" },
   ];
 
-  const { top } = useSafeAreaInsets();
-  const sx = useSx();
-  const { setValue, getValues, watch } = useForm({
-    defaultValues: {
-      parent_id: "",
-      code: "",
-      name: "",
-      type: availableTypes[0].value,
-      accept_entries: availableEntries[0].value,
-    },
-    resolver: yupResolver(formSchema),
-  });
+  const { setFieldTouched, handleSubmit, values, handleChange, errors } =
+    useFormik({
+      initialValues: {
+        parent_id: availableParentAccounts[0]?.id || "",
+        code: "",
+        name: "",
+        type: "",
+        accept_entries: "",
+      },
+      validationSchema: formSchema,
+      validateOnBlur: true,
+      onSubmit: addBill,
+    });
 
-  // watch is necessary to rerender the component when value changes
-  watch("parent_id");
-  watch("name");
-  watch("type");
-  watch("accept_entries");
+  const code = useNewCode(
+    values.parent_id?.length > 0 ? values.parent_id : undefined
+  );
 
-  function addBill() {
-    const { parent_id, code, name, type, accept_entries } = getValues();
+  async function addBill() {
+    const { parent_id, name, type, accept_entries } = values;
 
     const bill = {
       parent_id: parent_id?.length > 0 ? parent_id : undefined,
@@ -65,56 +92,74 @@ export default function AddBill() {
       accept_entries: parseInt(accept_entries),
     };
 
-    finalSchema.validateSync(bill);
+    try {
+      await finalSchema.validate(bill);
 
-    return null;
+      await database?.createBill(bill as Bill);
+
+      Alert.alert("Pronto", "A conta foi adicionada com sucesso :)")
+
+      navigation.goBack();
+
+      return null;
+    } catch (err) {
+      Alert.alert(
+        "Erro",
+        "Não foi possível adicionar a conta no momento. Corrija as informações e tenta novamente."
+      );
+
+      setFieldTouched("name");
+    }
   }
 
   const formFields: FormFieldProps[] = [
     {
       type: "picker",
       label: "Conta Pai",
-      options: availableParentAccounts,
+      options: availableParentAccountsOptions,
       value:
-        availableParentAccounts.find((f) => getValues("parent_id") === f.label)
+        availableParentAccountsOptions.find((f) => values.parent_id === f.value)
           ?.label || "",
       placeholder: "Selecione a Conta Pai (opcional)",
-      onChange: ({ value }) => setValue("parent_id", value),
+      onChange: ({ value }) => handleChange("parent_id")(value),
     },
     {
       type: "text",
       label: "Código",
       editable: false,
-      value: getValues("code"),
+      value: code,
       placeholder: "Gerado Automaticamente",
-      onChange: (val) => setValue("code", val),
+      onChange: () => null,
     },
     {
       type: "text",
       label: "Nome",
       editable: true,
-      value: getValues("name"),
+      value: values.name,
+      error: errors.name,
       placeholder: "Digite o nome da Conta",
-      onChange: (val) => setValue("name", val),
+      onChange: (val) => handleChange("name")(val),
+      onBlur: () => setFieldTouched("name"),
     },
     {
       type: "picker",
       label: "Tipo",
       options: availableTypes,
-      value:
-        availableTypes.find((t) => t.value === getValues("type"))?.label || "",
+      value: availableTypes.find((t) => t.value === values.type)?.label || "",
+      error: errors.type,
       placeholder: "",
-      onChange: ({ value }) => setValue("type", value),
+      onChange: ({ value }) => handleChange("type")(value),
     },
     {
       type: "picker",
       label: "Aceita Lançamentos",
       options: availableEntries,
       value:
-        availableEntries.find((t) => t.value === getValues("accept_entries"))
+        availableEntries.find((t) => t.value === values.accept_entries)
           ?.label || "",
+      error: errors.accept_entries,
       placeholder: "",
-      onChange: ({ value }) => setValue("accept_entries", value),
+      onChange: ({ value }) => handleChange("accept_entries")(value),
     },
   ];
 

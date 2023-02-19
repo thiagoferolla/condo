@@ -39,7 +39,7 @@ export default function BillsList(props: BillsListProps) {
       </View>
 
       {props.bills.map((b) => (
-        <BillCard bill={b} />
+        <BillCard key={b.id} bill={b} />
       ))}
     </View>
   );

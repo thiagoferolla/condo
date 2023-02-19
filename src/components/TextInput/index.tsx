@@ -1,47 +1,85 @@
 import { View, Text, useSx } from "dripsy";
+import { AnimatePresence, MotiText } from "moti";
 import { TextInput as RNTextInput } from "react-native";
 
 type TextInputProps = {
   label: string;
   value: string;
   placeholder: string;
+  error?: string;
   editable?: boolean;
   onChangeText: (text: string) => void;
+  onFocus?: () => void;
+  onBlur?: () => void;
 };
 
 export default function TextInput(props: TextInputProps) {
   const sx = useSx();
 
   return (
-    <View>
-      <Text
-        sx={{
-          color: "$text",
-          fontWeight: "500",
-          fontSize: "$md",
-          marginBottom: "$xxs",
-        }}
-      >
-        {props.label}
-      </Text>
+    <AnimatePresence>
+      <View>
+        <Text
+          sx={{
+            color: "$text",
+            fontWeight: "500",
+            fontSize: "$md",
+            marginBottom: "$xxs",
+          }}
+        >
+          {props.label}
+        </Text>
 
-      <View
-        sx={{
-          backgroundColor: "$white",
-          borderRadius: "$sm",
-          paddingX: "$md",
-          paddingY: "$sm",
-          height: 43,
-        }}
-      >
-        <RNTextInput
-          value={props.value}
-          onChangeText={props.onChangeText}
-          placeholder={props.placeholder}
-          style={sx({ color: "$input", fontSize: "$md" })}
-          editable={props.editable}
-        />
+        <View
+          sx={{
+            backgroundColor: "$white",
+            borderRadius: "$sm",
+            paddingX: "$md",
+            paddingY: "$sm",
+            height: 43,
+            borderWidth: props.error ? 1 : 0,
+            borderColor: props.error ? "$destructive" : "transparent",
+          }}
+        >
+          <RNTextInput
+            value={props.value}
+            onChangeText={props.onChangeText}
+            onFocus={props.onFocus}
+            onBlur={props.onBlur}
+            placeholder={props.placeholder}
+            placeholderTextColor={sx({ color: "$placeholder" }).color}
+            style={sx({ color: "$input", fontSize: "$md" })}
+            editable={props.editable}
+          />
+        </View>
       </View>
-    </View>
+
+      {(props.error?.length || 0) > 0 && (
+        <MotiText
+          from={{
+            transform: [{ translateY: -5 }],
+            opacity: 0,
+          }}
+          animate={{
+            transform: [{ translateY: 0 }],
+            opacity: 1,
+          }}
+          exit={{
+            transform: [{ translateY: -5 }],
+            opacity: 0,
+          }}
+          style={sx({
+            fontSize: "$xs",
+            color: "$destructive",
+          })}
+          transition={{
+            type: "timing",
+            duration: 700,
+          }}
+        >
+          {props.error}
+        </MotiText>
+      )}
+    </AnimatePresence>
   );
 }

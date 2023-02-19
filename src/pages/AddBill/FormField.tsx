@@ -6,15 +6,19 @@ export type FormFieldProps =
       type: "text";
       value: string;
       label: string;
+      error?: string;
       editable?: boolean;
       placeholder: string;
       onChange: (val: string) => void;
+      onFocus?: () => void;
+      onBlur?: () => void;
     }
   | {
       type: "picker";
       options: { label: string; value: string }[];
       value: string;
       label: string;
+      error?: string;
       placeholder: string;
       onChange: (val: { label: string; value: string }) => void;
     };

@@ -19,7 +19,7 @@ export default class DatabaseService {
           "SELECT * FROM bills ORDER BY code ASC;",
           [],
           (_, { rows: { _array } }) => {
-            resolve(_array as Bill[]);
+            resolve(this.orderBills(_array) as Bill[]);
           }
         );
       }, reject);
@@ -55,8 +55,8 @@ export default class DatabaseService {
             `INSERT INTO bills (id, name, code, type, accept_entries) VALUES (?, ?, ?, ?, ?);`,
             [id, input.name, input.code, input.type, input.accept_entries],
             (_, { rows }) => {
-              this.notifyListeners();
               resolve(rows._array);
+              this.notifyListeners();
             }
           );
         }
@@ -107,5 +107,30 @@ export default class DatabaseService {
 
   notifyListeners() {
     this.listeners.forEach((listener) => listener());
+  }
+
+  private orderBills(bills: Bill[]) {
+    return bills.sort((a, b) => {
+      const aCodeDigits = a.code.split(".");
+      const bCodeDigits = b.code.split(".");
+
+      for (
+        let i = 0;
+        i < Math.max(aCodeDigits.length, bCodeDigits.length);
+        i++
+      ) {
+        if (!aCodeDigits[i]) {
+          return -1;
+        } else if (!bCodeDigits[i]) {
+          return 1;
+        }
+
+        if (parseInt(aCodeDigits[i]) > parseInt(bCodeDigits[i])) {
+          return 1;
+        }
+      }
+
+      return -1;
+    });
   }
 }
