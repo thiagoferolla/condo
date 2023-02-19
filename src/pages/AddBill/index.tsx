@@ -74,8 +74,6 @@ export default function AddBill() {
     },
     validationSchema: formSchema,
     validateOnChange: true,
-    validateOnBlur: true,
-    validateOnMount: true,
     onSubmit: addBill,
   });
 
