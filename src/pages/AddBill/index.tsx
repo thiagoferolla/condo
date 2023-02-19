@@ -4,12 +4,14 @@ import * as yup from "yup";
 import useAvailableParentAccounts from "../../hooks/useAvailableParentAccounts";
 import useNewCode from "../../hooks/useNewCode";
 import useDatabase from "../../hooks/useDatabase";
-import { useNavigation } from "@react-navigation/native";
+import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { MainNavigatorScreens } from "../../navigation/types";
 import { Bill } from "../../@types/Bill";
 import { useFormik } from "formik";
 import Form from "./Form";
+import useBill from "../../hooks/useBill";
+import { useEffect } from "react";
 
 const formSchema = yup.object().shape({
   parent_id: yup.string(),
@@ -40,6 +42,10 @@ export default function AddBill() {
   const database = useDatabase();
   const navigation =
     useNavigation<NativeStackNavigationProp<MainNavigatorScreens>>();
+  const route = useRoute<RouteProp<MainNavigatorScreens, "AddBill">>();
+  const { params } = route;
+  const edit = Boolean(typeof params?.id === "string");
+  const { data: bill } = useBill(params?.id);
 
   const availableParentAccounts = useAvailableParentAccounts();
   const availableParentAccountsOptions = [
@@ -60,20 +66,32 @@ export default function AddBill() {
 
   const { setFieldTouched, values, handleChange, errors } = useFormik({
     initialValues: {
-      parent_id: availableParentAccounts[0]?.id || "",
-      code: "",
-      name: "",
-      type: "",
-      accept_entries: "",
+      parent_id: bill?.parent_id || availableParentAccounts[0]?.id || "",
+      code: bill?.code || "",
+      name: bill?.name || "",
+      type: bill?.type || "",
+      accept_entries: bill?.accept_entries?.toString() || "",
     },
     validationSchema: formSchema,
+    validateOnChange: true,
     validateOnBlur: true,
+    validateOnMount: true,
     onSubmit: addBill,
   });
 
   const code = useNewCode(
     values.parent_id?.length > 0 ? values.parent_id : undefined
   );
+
+  useEffect(() => {
+    if (edit && bill) {
+      handleChange("parent_id")(bill.parent_id || "");
+      handleChange("code")(bill.code);
+      handleChange("name")(bill.name);
+      handleChange("type")(bill.type);
+      handleChange("accept_entries")(bill.accept_entries?.toString() || "");
+    }
+  }, [edit, bill]);
 
   async function addBill() {
     const { parent_id, name, type, accept_entries } = values;
@@ -89,9 +107,18 @@ export default function AddBill() {
     try {
       await finalSchema.validate(bill);
 
-      await database?.createBill(bill as Bill);
+      if (edit && params?.id) {
+        await database?.updateBill(params?.id, bill as Bill);
+      } else {
+        await database?.createBill(bill as Bill);
+      }
 
-      Alert.alert("Pronto", "A conta foi adicionada com sucesso :)");
+      Alert.alert(
+        "Pronto",
+        edit
+          ? "A conta foi editada com sucesso :)"
+          : "A conta foi adicionada com sucesso :)"
+      );
 
       navigation.goBack();
 
@@ -99,15 +126,18 @@ export default function AddBill() {
     } catch (err) {
       Alert.alert(
         "Erro",
-        "Não foi possível adicionar a conta no momento. Corrija as informações e tenta novamente."
+        edit
+          ? "Não foi possível editar a conta no momento. Corrija as informações e tenta novamente."
+          : "Não foi possível adicionar a conta no momento. Corrija as informações e tenta novamente."
       );
 
       setFieldTouched("name");
     }
   }
 
-  const formFields: FormFieldProps[] = [
+  const formFields: (FormFieldProps & { key: string })[] = [
     {
+      key: "parent_id",
       type: "picker",
       label: "Conta Pai",
       options: availableParentAccountsOptions,
@@ -118,14 +148,16 @@ export default function AddBill() {
       onChange: ({ value }) => handleChange("parent_id")(value),
     },
     {
+      key: "code",
       type: "text",
       label: "Código",
-      editable: false,
+      editable: true,
       value: code,
       placeholder: "Gerado Automaticamente",
       onChange: () => null,
     },
     {
+      key: "name",
       type: "text",
       label: "Nome",
       editable: true,
@@ -136,6 +168,7 @@ export default function AddBill() {
       onBlur: () => setFieldTouched("name"),
     },
     {
+      key: "type",
       type: "picker",
       label: "Tipo",
       options: availableTypes,
@@ -145,6 +178,7 @@ export default function AddBill() {
       onChange: ({ value }) => handleChange("type")(value),
     },
     {
+      key: "accept_entries",
       type: "picker",
       label: "Aceita Lançamentos",
       options: availableEntries,
@@ -157,5 +191,5 @@ export default function AddBill() {
     },
   ];
 
-  return <Form onSubmit={addBill} formFields={formFields} />;
+  return <Form edit={edit} onSubmit={addBill} formFields={formFields} />;
 }

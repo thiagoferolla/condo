@@ -1,4 +1,4 @@
 export type MainNavigatorScreens = {
   BillsPlan: undefined;
-  AddBill: undefined;
+  AddBill: { id: string } | undefined;
 };

@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Bill } from "../@types/Bill";
 import useDatabase from "./useDatabase";
 
-export default function useBills(id: string): {
+export default function useBills(id?: string): {
   isLoading: boolean;
   data: Bill | undefined;
   refetch: () => void;
@@ -11,19 +11,23 @@ export default function useBills(id: string): {
   const [bill, setBill] = useState<Bill | undefined>(undefined);
 
   function fetchBill() {
-    database
-      ?.findById(id)
-      .then((bill: Bill) => {
-        setBill(bill);
-      })
-      .catch((err) => console.error(err));
+    if (id) {
+      database
+        ?.findById(id)
+        .then((bill: Bill) => {
+          setBill(bill);
+        })
+        .catch((err) => console.error(err));
+    }
   }
 
   useEffect(() => {
-    fetchBill();
+    if (id) {
+      fetchBill();
 
-    database?.addEventListener(fetchBill);
-  }, [database]);
+      database?.addEventListener(fetchBill);
+    }
+  }, [database, id]);
 
   return {
     isLoading: false,

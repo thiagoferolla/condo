@@ -6,6 +6,7 @@ import Header from "../../components/Header";
 import FormField, { FormFieldProps } from "./FormField";
 
 type FormProps = {
+  edit?: boolean;
   onSubmit: () => void;
   formFields: FormFieldProps[];
 };
@@ -26,7 +27,7 @@ export default function Form(props: FormProps) {
       <StatusBar barStyle={"light-content"} />
 
       <Header
-        pageTitle="Inserir Conta"
+        pageTitle={props.edit ? "Editar Conta" : "Inserir Conta"}
         headerRight={() => (
           <TouchableNativeFeedback
             onPress={props.onSubmit}

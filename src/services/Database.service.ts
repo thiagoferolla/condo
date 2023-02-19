@@ -56,29 +56,46 @@ export default class DatabaseService {
 
     return new Promise((resolve, reject) => {
       this.db.transaction((tx) => {
-        if (input.parent_id) {
-          tx.executeSql(
-            `INSERT INTO bills (id, name, parent_id, code, type, accept_entries) VALUES (?, ?, ?, ?, ?, ?);`,
-            [
-              id,
-              input.name,
-              input.parent_id,
-              input.code,
-              input.type,
-              input.accept_entries,
-            ],
-            (_, { rows }) => resolve(rows)
-          );
-        } else {
-          tx.executeSql(
-            `INSERT INTO bills (id, name, code, type, accept_entries) VALUES (?, ?, ?, ?, ?);`,
-            [id, input.name, input.code, input.type, input.accept_entries],
-            (_, { rows }) => {
-              resolve(rows._array);
-              this.notifyListeners();
-            }
-          );
-        }
+        tx.executeSql(
+          `INSERT INTO bills (id, name, parent_id, code, type, accept_entries) VALUES (?, ?, ?, ?, ?, ?);`,
+          [
+            id,
+            input.name,
+            input.parent_id || null,
+            input.code,
+            input.type,
+            input.accept_entries,
+          ],
+          (_, { rows }) => resolve(rows)
+        );
+      }, reject);
+    });
+  }
+
+  updateBill(
+    id: string,
+    input: {
+      name: string;
+      parent_id?: string;
+      code: string;
+      type: string;
+      accept_entries: 0 | 1;
+    }
+  ) {
+    return new Promise((resolve, reject) => {
+      this.db.transaction((tx) => {
+        tx.executeSql(
+          `UPDATE bills SET name = ?, parent_id = ?, code = ?, type = ?, accept_entries = ? WHERE id = ?;`,
+          [
+            input.name,
+            input.parent_id || null,
+            input.code,
+            input.type,
+            input.accept_entries,
+            id,
+          ],
+          (_, { rows }) => resolve(rows)
+        );
       }, reject);
     });
   }
