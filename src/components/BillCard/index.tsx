@@ -7,6 +7,7 @@ import DeleteModal from "../DeleteModal";
 import { useNavigation } from "@react-navigation/native";
 import { MainNavigatorScreens } from "../../navigation/types";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack/lib/typescript/src/types";
+import { Skeleton } from "moti/skeleton";
 
 type BillCardProps = {
   bill: Bill;
@@ -36,9 +37,10 @@ export default function BillCard(props: BillCardProps) {
             alignItems: "center",
             justifyContent: "space-between",
             backgroundColor: "$white",
-            padding: "$md",
+            paddingX: "$md",
             margin: "$xs",
             borderRadius: "$lg",
+            height: 70,
           }}
         >
           <Text
@@ -65,3 +67,26 @@ export default function BillCard(props: BillCardProps) {
     </>
   );
 }
+
+BillCard.Skeleton = () => {
+  const sx = useSx();
+
+  return (
+    <View
+      sx={{
+        margin: "$xs",
+        height: 70,
+      }}
+    >
+      <Skeleton
+        height={70}
+        width={"100%"}
+        show={true}
+        radius={sx({ borderRadius: "$lg" }).borderRadius}
+        colorMode="light"
+      >
+        <View />
+      </Skeleton>
+    </View>
+  );
+};

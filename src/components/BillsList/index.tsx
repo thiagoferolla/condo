@@ -4,9 +4,16 @@ import BillCard from "../BillCard";
 
 type BillsListProps = {
   bills: Bill[];
+  loading?: boolean;
 };
 
 export default function BillsList(props: BillsListProps) {
+  const listBody = props.loading
+    ? new Array(10)
+        .fill(undefined)
+        .map((_, index) => <BillCard.Skeleton key={index} />)
+    : props.bills.map((b) => <BillCard key={b.id} bill={b} />);
+
   return (
     <View>
       <View
@@ -38,9 +45,7 @@ export default function BillsList(props: BillsListProps) {
         </Text>
       </View>
 
-      {props.bills.map((b) => (
-        <BillCard key={b.id} bill={b} />
-      ))}
+      {listBody}
     </View>
   );
 }

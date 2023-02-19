@@ -31,6 +31,20 @@ export default class DatabaseService {
     });
   }
 
+  searchBills(term: string): Promise<Bill[]> {
+    return new Promise((resolve, reject) => {
+      this.db.transaction((tx) => {
+        tx.executeSql(
+          "SELECT * FROM bills WHERE UPPER(name) LIKE ? OR code LIKE ? ORDER BY code ASC;",
+          ["%" + term.toUpperCase() + "%", "%" + term + "%"],
+          (_, { rows: { _array } }) => {
+            resolve(this.orderBills(_array) as Bill[]);
+          }
+        );
+      }, reject);
+    });
+  }
+
   findAll(): Promise<Bill[]> {
     return new Promise((resolve, reject) => {
       this.db.transaction((tx) => {
