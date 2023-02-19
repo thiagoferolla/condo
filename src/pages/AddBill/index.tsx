@@ -1,9 +1,5 @@
-import { View, useSx } from "dripsy";
-import { StatusBar, TouchableNativeFeedback, Alert } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import Header from "../../components/Header";
-import Icon from "@expo/vector-icons/MaterialIcons";
-import FormField, { FormFieldProps } from "./FormField";
+import { Alert } from "react-native";
+import { FormFieldProps } from "./FormField";
 import * as yup from "yup";
 import useAvailableParentAccounts from "../../hooks/useAvailableParentAccounts";
 import useNewCode from "../../hooks/useNewCode";
@@ -13,6 +9,7 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { MainNavigatorScreens } from "../../navigation/types";
 import { Bill } from "../../@types/Bill";
 import { useFormik } from "formik";
+import Form from "./Form";
 
 const formSchema = yup.object().shape({
   parent_id: yup.string(),
@@ -40,8 +37,6 @@ const finalSchema = yup.object().shape({
 });
 
 export default function AddBill() {
-  const { top } = useSafeAreaInsets();
-  const sx = useSx();
   const database = useDatabase();
   const navigation =
     useNavigation<NativeStackNavigationProp<MainNavigatorScreens>>();
@@ -63,19 +58,18 @@ export default function AddBill() {
     { label: "Não", value: "0" },
   ];
 
-  const { setFieldTouched, handleSubmit, values, handleChange, errors } =
-    useFormik({
-      initialValues: {
-        parent_id: availableParentAccounts[0]?.id || "",
-        code: "",
-        name: "",
-        type: "",
-        accept_entries: "",
-      },
-      validationSchema: formSchema,
-      validateOnBlur: true,
-      onSubmit: addBill,
-    });
+  const { setFieldTouched, values, handleChange, errors } = useFormik({
+    initialValues: {
+      parent_id: availableParentAccounts[0]?.id || "",
+      code: "",
+      name: "",
+      type: "",
+      accept_entries: "",
+    },
+    validationSchema: formSchema,
+    validateOnBlur: true,
+    onSubmit: addBill,
+  });
 
   const code = useNewCode(
     values.parent_id?.length > 0 ? values.parent_id : undefined
@@ -97,7 +91,7 @@ export default function AddBill() {
 
       await database?.createBill(bill as Bill);
 
-      Alert.alert("Pronto", "A conta foi adicionada com sucesso :)")
+      Alert.alert("Pronto", "A conta foi adicionada com sucesso :)");
 
       navigation.goBack();
 
@@ -163,49 +157,5 @@ export default function AddBill() {
     },
   ];
 
-  return (
-    <View
-      sx={{
-        flex: 1,
-        backgroundColor: "$primary",
-        justifyContent: "center",
-        paddingTop: top,
-      }}
-    >
-      <StatusBar barStyle={"light-content"} />
-
-      <Header
-        pageTitle="Inserir Conta"
-        headerRight={() => (
-          <TouchableNativeFeedback
-            onPress={addBill}
-            style={sx({ padding: "$sm" })}
-          >
-            <Icon
-              name="check"
-              size={24}
-              color={sx({ color: "$white" }).color}
-            />
-          </TouchableNativeFeedback>
-        )}
-      />
-
-      <View
-        sx={{
-          flex: 1,
-          backgroundColor: "$background",
-          borderTopRightRadius: "$xl",
-          borderTopLeftRadius: "$xl",
-          paddingX: "$lg",
-          paddingTop: "$lg",
-        }}
-      >
-        {formFields.map((f) => (
-          <View key={f.label} sx={{ marginY: "$xxs" }}>
-            <FormField {...f} />
-          </View>
-        ))}
-      </View>
-    </View>
-  );
+  return <Form onSubmit={addBill} formFields={formFields} />;
 }

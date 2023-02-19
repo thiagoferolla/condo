@@ -12,6 +12,25 @@ export default class DatabaseService {
     this.listeners = [];
   }
 
+  findById(id: string): Promise<Bill> {
+    return new Promise((resolve, reject) => {
+      this.db.transaction((tx) => {
+        tx.executeSql(
+          "SELECT * FROM bills WHERE id = ?;",
+          [id],
+          (_, { rows: { _array } }) => {
+            if (!_array.length) {
+              reject(new Error("Bill not found"));
+              return;
+            }
+
+            resolve(_array[0] as Bill);
+          }
+        );
+      }, reject);
+    });
+  }
+
   findAll(): Promise<Bill[]> {
     return new Promise((resolve, reject) => {
       this.db.transaction((tx) => {

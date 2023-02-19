@@ -13,6 +13,7 @@ export const theme = makeTheme({
     $muted: "#A0A0B2",
     $placeholder: "#C4C4D1",
     $input: "#777777",
+    $overflow: "rgba(0,0,0,0.2)",
   },
   fontSizes: {
     $xl: 22,
