@@ -8,7 +8,6 @@ export default function useNewCode(parent_id?: string) {
     if (!parent_id) {
       return data?.filter((d) => !d.parent_id) || [];
     } else {
-      console.log(data);
       return data?.filter((d) => d.parent_id === parent_id) || [];
     }
   }
