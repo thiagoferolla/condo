@@ -1,33 +1,16 @@
 import { useState, useEffect } from "react";
 import { Bill } from "../@types/Bill";
 import useDatabase from "./useDatabase";
+import { useQuery } from "@tanstack/react-query";
 
-export default function useSearchBills(term: string): {
-  isLoading: boolean;
-  data: Bill[] | undefined;
-  refetch: () => void;
-} {
+export default function useSearchBills(term: string) {
   const database = useDatabase();
-  const [isLoading, setIsLoading] = useState(false);
-  const [bills, setBills] = useState<Bill[] | undefined>(undefined);
 
-  function searchBills() {
-    setIsLoading(true);
-    database?.searchBills(term).then((bills: Bill[]) => {
-      setBills(bills);
-      setIsLoading(false);
-    });
-  }
+  const query = useQuery({
+    queryKey: ["bills", { term }],
+    enabled: Boolean(database),
+    queryFn: () => database?.searchBills(term),
+  });
 
-  useEffect(() => {
-    searchBills();
-
-    database?.addEventListener(searchBills);
-  }, [database, term]);
-
-  return {
-    isLoading,
-    data: bills,
-    refetch: searchBills,
-  };
+  return query;
 }

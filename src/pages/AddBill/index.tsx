@@ -11,6 +11,8 @@ import { Bill } from "../../@types/Bill";
 import Form from "./Form";
 import useBill from "../../hooks/useBill";
 import { useEffect, useState, useMemo } from "react";
+import { useMutation } from "@tanstack/react-query";
+import { queryClient } from "../../providers/QueryContextProvider";
 
 const formSchema = yup.object().shape({
   parent_id: yup.string(),
@@ -93,16 +95,16 @@ export default function AddBill() {
     }
   }, [edit, bill]);
 
-  async function addBill() {
-    const bill = {
-      parent_id: parentId?.length > 0 ? parentId : undefined,
-      code,
-      name,
-      type,
-      accept_entries: parseInt(acceptEntries),
-    };
+  const { mutate } = useMutation({
+    mutationFn: async () => {
+      const bill = {
+        parent_id: parentId?.length > 0 ? parentId : undefined,
+        code,
+        name,
+        type,
+        accept_entries: parseInt(acceptEntries),
+      };
 
-    try {
       await finalSchema.validate(bill);
 
       if (edit && params?.id) {
@@ -111,6 +113,10 @@ export default function AddBill() {
         await database?.createBill(bill as Bill);
       }
 
+      return;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(["bills"]);
       Alert.alert(
         "Pronto",
         edit
@@ -119,9 +125,8 @@ export default function AddBill() {
       );
 
       navigation.goBack();
-
-      return null;
-    } catch (err) {
+    },
+    onError: () => {
       Alert.alert(
         "Erro",
         edit
@@ -129,9 +134,9 @@ export default function AddBill() {
           : "Não foi possível adicionar a conta no momento. Corrija as informações e tenta novamente."
       );
 
-      setNameFieldTouched("name");
-    }
-  }
+      setNameFieldTouched(true);
+    },
+  });
 
   const errors = useMemo(() => {
     try {
@@ -216,5 +221,5 @@ export default function AddBill() {
     },
   ];
 
-  return <Form edit={edit} onSubmit={addBill} formFields={formFields} />;
+  return <Form edit={edit} onSubmit={mutate} formFields={formFields} />;
 }

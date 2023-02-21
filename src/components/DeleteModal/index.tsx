@@ -3,6 +3,8 @@ import { View, Text, useSx } from "dripsy";
 import useDatabase from "../../hooks/useDatabase";
 import useBill from "../../hooks/useBill";
 import Icon from "@expo/vector-icons/MaterialIcons";
+import { useMutation } from "@tanstack/react-query";
+import { queryClient } from "../../providers/QueryContextProvider";
 
 type DeleteModalProps = {
   billId: string;
@@ -15,11 +17,16 @@ export default function DeleteModal(props: DeleteModalProps) {
   const { data: bill } = useBill(props.billId);
   const sx = useSx();
 
-  function onSubmit() {
-    return database
-      ?.deleteBill(props.billId)
-      .then(() => props.onRequestClose());
-  }
+  const { mutate } = useMutation({
+    mutationFn: () => {
+      return database?.deleteBill(props.billId);
+    },
+    onSuccess() {
+      props.onRequestClose();
+      queryClient.invalidateQueries(["bills"]);
+      queryClient.invalidateQueries(["bills", { id: props.billId }]);
+    },
+  });
 
   return (
     <Modal
@@ -95,7 +102,7 @@ export default function DeleteModal(props: DeleteModalProps) {
               </View>
             </TouchableNativeFeedback>
 
-            <TouchableNativeFeedback onPress={onSubmit}>
+            <TouchableNativeFeedback onPress={mutate}>
               <View
                 sx={{
                   backgroundColor: "$destructive",
