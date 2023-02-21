@@ -1,5 +1,5 @@
 import Picker from "../../components/Picker";
-import TextInput from "../../components/TextInput";
+import TextInput, { TextInputProps } from "../../components/TextInput";
 
 export type FormFieldProps =
   | {
@@ -9,6 +9,7 @@ export type FormFieldProps =
       error?: string;
       editable?: boolean;
       placeholder: string;
+      keyboardType?: TextInputProps["keyboardType"];
       onChange: (val: string) => void;
       onFocus?: () => void;
       onBlur?: () => void;

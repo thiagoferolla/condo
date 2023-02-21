@@ -1,7 +1,5 @@
-import { useRef, useEffect } from "react";
 import { Dimensions, TouchableNativeFeedback } from "react-native";
 import { View, Text, Image } from "dripsy";
-import LottieView from "lottie-react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { MainNavigatorScreens } from "../../navigation/types";

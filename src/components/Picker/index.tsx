@@ -42,16 +42,6 @@ export default function Picker(props: PickerProps) {
             height: 43,
           }}
         >
-          {props.value === "" && (
-            <View
-              style={[
-                StyleSheet.absoluteFillObject,
-                sx({ alignItems: "center" }),
-              ]}
-            >
-              <Text sx={{ fontSize: "$md" }}>{props.placeholder}</Text>
-            </View>
-          )}
           <RNPicker
             selectedValue={
               props.options.find((op) => op.label === props.value)?.value
@@ -67,7 +57,6 @@ export default function Picker(props: PickerProps) {
                 label={op.label}
                 style={sx({
                   color: "$input",
-                  fontSize: "$md",
                 })}
               />
             ))}

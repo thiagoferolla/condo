@@ -8,14 +8,17 @@ import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { MainNavigatorScreens } from "../../navigation/types";
 import { Bill } from "../../@types/Bill";
-import { useFormik } from "formik";
 import Form from "./Form";
 import useBill from "../../hooks/useBill";
-import { useEffect } from "react";
+import { useEffect, useState, useMemo } from "react";
 
 const formSchema = yup.object().shape({
   parent_id: yup.string(),
-  code: yup.string().required().min(1),
+  code: yup
+    .string()
+    .required()
+    .min(1)
+    .matches("^[0-9][0-9.]*$", "O código só deve conter números e pontos"),
   name: yup
     .string()
     .required("O nome da conta é obrigatório")
@@ -32,7 +35,10 @@ const formSchema = yup.object().shape({
 
 const finalSchema = yup.object().shape({
   parent_id: yup.string(),
-  code: yup.string().required(),
+  code: yup
+    .string()
+    .required()
+    .matches("^[0-9][0-9.]*$", "O código só deve conter números e pontos"),
   name: yup.string().required(),
   type: yup.string().required().oneOf(["income", "expense"]),
   accept_entries: yup.number().required().oneOf([1, 0]),
@@ -64,42 +70,36 @@ export default function AddBill() {
     { label: "Não", value: "0" },
   ];
 
-  const { setFieldTouched, values, handleChange, errors } = useFormik({
-    initialValues: {
-      parent_id: bill?.parent_id || availableParentAccounts[0]?.id || "",
-      code: bill?.code || "",
-      name: bill?.name || "",
-      type: bill?.type || "",
-      accept_entries: bill?.accept_entries?.toString() || "",
-    },
-    validationSchema: formSchema,
-    validateOnChange: true,
-    onSubmit: addBill,
-  });
+  const [parentId, setParentId] = useState("");
+  const [code, setCode] = useState("");
+  const [name, setName] = useState("");
+  const [nameFieldTouched, setNameFieldTouched] = useState(false);
+  const [type, setType] = useState(availableTypes[0].value);
+  const [acceptEntries, setAcceptEntries] = useState(availableEntries[0].value);
 
-  const code = useNewCode(
-    values.parent_id?.length > 0 ? values.parent_id : undefined
-  );
+  const generatedCode = useNewCode(parentId?.length > 0 ? parentId : undefined);
+
+  useEffect(() => {
+    setCode(generatedCode);
+  }, [generatedCode]);
 
   useEffect(() => {
     if (edit && bill) {
-      handleChange("parent_id")(bill.parent_id || "");
-      handleChange("code")(bill.code);
-      handleChange("name")(bill.name);
-      handleChange("type")(bill.type);
-      handleChange("accept_entries")(bill.accept_entries?.toString() || "");
+      setParentId(bill.parent_id || "");
+      setCode(bill.code);
+      setName(bill.name);
+      setType(bill.type);
+      setAcceptEntries(bill.accept_entries?.toString() || "");
     }
   }, [edit, bill]);
 
   async function addBill() {
-    const { parent_id, name, type, accept_entries } = values;
-
     const bill = {
-      parent_id: parent_id?.length > 0 ? parent_id : undefined,
+      parent_id: parentId?.length > 0 ? parentId : undefined,
       code,
       name,
       type,
-      accept_entries: parseInt(accept_entries),
+      accept_entries: parseInt(acceptEntries),
     };
 
     try {
@@ -129,9 +129,30 @@ export default function AddBill() {
           : "Não foi possível adicionar a conta no momento. Corrija as informações e tenta novamente."
       );
 
-      setFieldTouched("name");
+      setNameFieldTouched("name");
     }
   }
+
+  const errors = useMemo(() => {
+    try {
+      formSchema.validateSync(
+        {
+          parent_id: parentId,
+          code,
+          name,
+          type,
+          accept_entries: acceptEntries,
+        },
+        { abortEarly: false }
+      );
+
+      return {};
+    } catch (err) {
+      return err.inner.reduce((acc, curr) => {
+        return { ...acc, [curr.path]: curr.message };
+      }, {});
+    }
+  }, [parentId, code, name, type, acceptEntries]);
 
   const formFields: (FormFieldProps & { key: string })[] = [
     {
@@ -140,10 +161,10 @@ export default function AddBill() {
       label: "Conta Pai",
       options: availableParentAccountsOptions,
       value:
-        availableParentAccountsOptions.find((f) => values.parent_id === f.value)
+        availableParentAccountsOptions.find((f) => parentId === f.value)
           ?.label || "",
       placeholder: "Selecione a Conta Pai (opcional)",
-      onChange: ({ value }) => handleChange("parent_id")(value),
+      onChange: ({ value }) => setParentId(value),
     },
     {
       key: "code",
@@ -151,29 +172,35 @@ export default function AddBill() {
       label: "Código",
       editable: true,
       value: code,
+      error: errors.code,
       placeholder: "Gerado Automaticamente",
-      onChange: () => null,
+      keyboardType: "numeric",
+      onChange: (val) => setCode(val),
     },
     {
       key: "name",
       type: "text",
       label: "Nome",
       editable: true,
-      value: values.name,
-      error: errors.name,
+      value: name,
+      error: nameFieldTouched ? errors.name : undefined,
       placeholder: "Digite o nome da Conta",
-      onChange: (val) => handleChange("name")(val),
-      onBlur: () => setFieldTouched("name"),
+      onChange: (val) => setName(val),
+      onBlur: () => setNameFieldTouched(true),
     },
     {
       key: "type",
       type: "picker",
       label: "Tipo",
-      options: availableTypes,
-      value: availableTypes.find((t) => t.value === values.type)?.label || "",
-      error: errors.type,
-      placeholder: "",
-      onChange: ({ value }) => handleChange("type")(value),
+      options: [
+        { label: "Receita", value: "income" },
+        { label: "Despesa", value: "expense" },
+      ],
+      value: availableTypes.find((t) => t.value === type)?.label || "",
+      placeholder: "Escolha o tipo de conta",
+      onChange: (payload) => {
+        setType(payload.value);
+      },
     },
     {
       key: "accept_entries",
@@ -181,11 +208,11 @@ export default function AddBill() {
       label: "Aceita Lançamentos",
       options: availableEntries,
       value:
-        availableEntries.find((t) => t.value === values.accept_entries)
-          ?.label || "",
-      error: errors.accept_entries,
+        availableEntries.find((t) => t.value === acceptEntries)?.label || "",
       placeholder: "",
-      onChange: ({ value }) => handleChange("accept_entries")(value),
+      onChange: (payload) => {
+        setAcceptEntries(payload.value);
+      },
     },
   ];
 

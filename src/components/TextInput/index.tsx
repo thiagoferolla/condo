@@ -1,13 +1,15 @@
 import { View, Text, useSx } from "dripsy";
-import { AnimatePresence, MotiText } from "moti";
 import { TextInput as RNTextInput } from "react-native";
+import type { TextInputProps as RNTextInputProps } from "react-native";
+import { AnimatePresence, MotiText } from "moti";
 
-type TextInputProps = {
+export type TextInputProps = {
   label: string;
   value: string;
   placeholder: string;
   error?: string;
   editable?: boolean;
+  keyboardType?: RNTextInputProps["keyboardType"];
   onChangeText: (text: string) => void;
   onFocus?: () => void;
   onBlur?: () => void;
@@ -22,7 +24,6 @@ export default function TextInput(props: TextInputProps) {
         <Text
           sx={{
             color: "$text",
-            fontWeight: "500",
             fontSize: "$md",
             marginBottom: "$xxs",
           }}
@@ -50,6 +51,7 @@ export default function TextInput(props: TextInputProps) {
             placeholderTextColor={sx({ color: "$placeholder" }).color}
             style={sx({ color: "$input", fontSize: "$md" })}
             editable={props.editable}
+            keyboardType={props.keyboardType}
           />
         </View>
       </View>
