@@ -27,8 +27,6 @@ export default function useNewCode(parent_id?: string) {
       return parentCode + ".1";
     }
 
-    console.log(siblings);
-
     const siblingsLastDigits = siblings.map((s) => {
       const digits = s.code?.split(".");
 
