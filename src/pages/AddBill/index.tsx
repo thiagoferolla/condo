@@ -77,7 +77,10 @@ export default function AddBill() {
   const [name, setName] = useState("");
   const [nameFieldTouched, setNameFieldTouched] = useState(false);
   const [type, setType] = useState("");
+  const [typeFieldTouched, setTypeFieldTouched] = useState(false);
   const [acceptEntries, setAcceptEntries] = useState("");
+  const [acceptEntriesFieldTouched, setAcceptEntriesFieldTouched] =
+    useState(false);
 
   const generatedCode = useNewCode(parentId?.length > 0 ? parentId : undefined);
 
@@ -135,6 +138,8 @@ export default function AddBill() {
       );
 
       setNameFieldTouched(true);
+      setTypeFieldTouched(true);
+      setAcceptEntriesFieldTouched(true);
     },
   });
 
@@ -203,9 +208,10 @@ export default function AddBill() {
       ],
       value: availableTypes.find((t) => t.value === type)?.label || "",
       placeholder: "Escolha o tipo de conta",
-      error: errors?.type,
+      error: typeFieldTouched ? errors?.type : undefined,
       onChange: (payload) => {
         setType(payload.value);
+        setTypeFieldTouched(true);
       },
     },
     {
@@ -216,9 +222,10 @@ export default function AddBill() {
       value:
         availableEntries.find((t) => t.value === acceptEntries)?.label || "",
       placeholder: "",
-      error: errors?.accept_entries,
+      error: acceptEntriesFieldTouched ? errors?.accept_entries : undefined,
       onChange: (payload) => {
         setAcceptEntries(payload.value);
+        setAcceptEntriesFieldTouched(true);
       },
     },
   ];

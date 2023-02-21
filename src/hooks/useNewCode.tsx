@@ -27,9 +27,18 @@ export default function useNewCode(parent_id?: string) {
       return parentCode + ".1";
     }
 
-    const siblingsLastDigits = siblings.map((s) =>
-      parseInt(s.code.split(".").at(-1) || "0")
-    );
+    console.log(siblings);
+
+    const siblingsLastDigits = siblings.map((s) => {
+      const digits = s.code?.split(".");
+
+      if (!digits.length) {
+        return 0;
+      }
+
+      return parseInt(digits[digits.length - 1] || "0");
+    });
+    
 
     const newDigit = (Math.max(...siblingsLastDigits) + 1).toString();
 
