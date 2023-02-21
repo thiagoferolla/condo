@@ -1,49 +1,70 @@
 import { useRef, useEffect } from "react";
-import { Dimensions } from "react-native";
-import { View, Text } from "dripsy";
+import { Dimensions, TouchableNativeFeedback } from "react-native";
+import { View, Text, Image } from "dripsy";
 import LottieView from "lottie-react-native";
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { MainNavigatorScreens } from "../../navigation/types";
 
 export default function EmptyState() {
   const { width } = Dimensions.get("screen");
-  const animationRef = useRef<LottieView>(null);
-
-  useEffect(() => {
-    animationRef.current?.play();
-  }, []);
+  const navigation =
+    useNavigation<NativeStackNavigationProp<MainNavigatorScreens>>();
 
   return (
     <View style={{ alignItems: "center", justifyContent: "center" }}>
-      <LottieView
-        ref={animationRef}
-        autoPlay
-        autoSize
-        loop
-        style={{
+      <Image
+        source={require("./empty.png")}
+        sx={{
           width: width * 0.8,
-          height: width * 0.7,
+          height: width * 0.5,
+          marginTop: "$xl",
         }}
-        source={require("./empty_animation.json")}
+        resizeMode="contain"
       />
 
       <View>
         <Text
-          sx={{ fontSize: "$md", textAlign: "center", color: "$highlight" }}
-        >
-          {"Você ainda não possui nenhuma\nconta registrada"}
-        </Text>
-
-        <Text
           sx={{
-            fontSize: "$sm",
+            fontSize: "$md",
             textAlign: "center",
-            color: "$text",
-            marginTop: "$xs",
+            color: "$highlight",
+            marginBottom: "$md",
           }}
         >
-          {
-            "Cadastre a primeira conta para acompanhar\naqui seu plano de contas"
-          }
+          {"Você ainda não possui\nnenhuma conta registrada"}
         </Text>
+
+        <TouchableNativeFeedback onPress={() => navigation.navigate("AddBill")}>
+          <View
+            sx={{
+              backgroundColor: "$primary",
+              paddingX: "$md",
+              paddingY: "$sm",
+              borderRadius: "$sm",
+              alignItems: "center",
+              justifyContent: "center",
+              elevation: 3,
+              shadowColor: "#000",
+              shadowOffset: {
+                width: 0,
+                height: 1,
+              },
+              shadowOpacity: 0.22,
+              shadowRadius: 2.22,
+            }}
+          >
+            <Text
+              sx={{
+                color: "$white",
+                fontSize: "$md",
+                letterSpacing: 1.25,
+              }}
+            >
+              Cadastrar Primeira Conta
+            </Text>
+          </View>
+        </TouchableNativeFeedback>
       </View>
     </View>
   );
