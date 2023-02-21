@@ -9,6 +9,7 @@
     "web": "expo start --web"
   },
   "dependencies": {
+    "@expo/react-native-action-sheet": "^4.0.1",
     "@expo/vector-icons": "^13.0.0",
     "@react-native-picker/picker": "2.4.8",
     "@react-navigation/native": "^6.1.4",

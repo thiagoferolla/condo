@@ -28,11 +28,11 @@ const formSchema = yup.object().shape({
   type: yup
     .string()
     .required("É necessário escolher o tipo da conta")
-    .oneOf(["income", "expense"]),
+    .oneOf(["income", "expense"], "É necessário escolher o tipo da conta"),
   accept_entries: yup
     .string()
     .required("É necessário dizer se a conta aceita lançamentos")
-    .oneOf(["1", "0"]),
+    .oneOf(["1", "0"], "É necessário dizer se a conta aceita lançamentos"),
 });
 
 const finalSchema = yup.object().shape({
@@ -76,8 +76,8 @@ export default function AddBill() {
   const [code, setCode] = useState("");
   const [name, setName] = useState("");
   const [nameFieldTouched, setNameFieldTouched] = useState(false);
-  const [type, setType] = useState(availableTypes[0].value);
-  const [acceptEntries, setAcceptEntries] = useState(availableEntries[0].value);
+  const [type, setType] = useState("");
+  const [acceptEntries, setAcceptEntries] = useState("");
 
   const generatedCode = useNewCode(parentId?.length > 0 ? parentId : undefined);
 
@@ -203,6 +203,7 @@ export default function AddBill() {
       ],
       value: availableTypes.find((t) => t.value === type)?.label || "",
       placeholder: "Escolha o tipo de conta",
+      error: errors?.type,
       onChange: (payload) => {
         setType(payload.value);
       },
@@ -215,6 +216,7 @@ export default function AddBill() {
       value:
         availableEntries.find((t) => t.value === acceptEntries)?.label || "",
       placeholder: "",
+      error: errors?.accept_entries,
       onChange: (payload) => {
         setAcceptEntries(payload.value);
       },

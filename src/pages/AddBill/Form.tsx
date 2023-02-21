@@ -8,7 +8,7 @@ import FormField, { FormFieldProps } from "./FormField";
 type FormProps = {
   edit?: boolean;
   onSubmit: () => void;
-  formFields: FormFieldProps[];
+  formFields: (FormFieldProps & { key: string })[];
 };
 
 export default function Form(props: FormProps) {
@@ -53,7 +53,7 @@ export default function Form(props: FormProps) {
         }}
       >
         {props.formFields.map((f) => (
-          <View key={f.label} sx={{ marginY: "$xxs" }}>
+          <View key={f.key} sx={{ marginY: "$xxs" }}>
             <FormField {...f} />
           </View>
         ))}

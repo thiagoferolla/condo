@@ -24,11 +24,20 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
-      }
+      },
+      "package": "codes.thiagoferolla.condo",
+      "versionCode": 1
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "40713a2c-4b7c-4e99-8a0b-57d5e4af8edc"
+      }
     }
   },
-  "plugins": ["expo-community-flipper"]
+  "plugins": [
+    "expo-community-flipper"
+  ]
 }

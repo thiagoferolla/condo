@@ -1,7 +1,7 @@
 import { View, Text, useSx } from "dripsy";
 import { TextInput as RNTextInput } from "react-native";
 import type { TextInputProps as RNTextInputProps } from "react-native";
-import { AnimatePresence, MotiText } from "moti";
+import { AnimatePresence, MotiView } from "moti";
 
 export type TextInputProps = {
   label: string;
@@ -19,7 +19,7 @@ export default function TextInput(props: TextInputProps) {
   const sx = useSx();
 
   return (
-    <AnimatePresence>
+    <>
       <View>
         <Text
           sx={{
@@ -54,34 +54,35 @@ export default function TextInput(props: TextInputProps) {
             keyboardType={props.keyboardType}
           />
         </View>
-      </View>
 
-      {(props.error?.length || 0) > 0 && (
-        <MotiText
-          from={{
-            transform: [{ translateY: -5 }],
-            opacity: 0,
-          }}
-          animate={{
-            transform: [{ translateY: 0 }],
-            opacity: 1,
-          }}
-          exit={{
-            transform: [{ translateY: -5 }],
-            opacity: 0,
-          }}
-          style={sx({
-            fontSize: "$xs",
-            color: "$destructive",
-          })}
-          transition={{
-            type: "timing",
-            duration: 700,
-          }}
-        >
-          {props.error}
-        </MotiText>
-      )}
-    </AnimatePresence>
+        <AnimatePresence>
+          {props.error && (
+            <MotiView
+              from={{
+                transform: [{ translateY: -5 }],
+                opacity: 0,
+              }}
+              animate={{
+                transform: [{ translateY: 0 }],
+                opacity: 1,
+              }}
+              exit={{
+                transform: [{ translateY: -5 }],
+                opacity: 0,
+              }}
+            >
+              <Text
+                sx={{
+                  color: "$destructive",
+                  fontSize: "$sm",
+                }}
+              >
+                {props.error}
+              </Text>
+            </MotiView>
+          )}
+        </AnimatePresence>
+      </View>
+    </>
   );
 }
